@@ -204,6 +204,10 @@ cpdef check_gdf_error(errcode):
 
             raise GDFError(errname, msg)
 
+# CUDA functions
+
+cpdef cuda_host_register(data_ptr, size):
+    cudaHostRegister(<void*>data_ptr, size, 0)
 
 
 

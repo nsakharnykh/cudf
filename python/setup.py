@@ -24,7 +24,8 @@ cython_files = ['cudf/bindings/*.pyx']
 extensions = [
     Extension("*",
               sources=cython_files,
-              include_dirs=[numpy_include, '../cpp/include/'],
+              # TODO: is there a way to query CUDA_HOME env variable?
+              include_dirs=[numpy_include, '../cpp/include/', '/usr/local/cuda/include'],
               library_dirs=[get_python_lib()],
               libraries=['cudf'],
               language='c++',

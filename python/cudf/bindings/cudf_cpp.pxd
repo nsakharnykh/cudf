@@ -27,6 +27,23 @@ cpdef check_gdf_error(errcode)
 # First version of bindings has no changes to the cudf.h header, so this file
 # mirrors the structure in cpp/include
 
+cdef extern from "driver_types.h" nogil:
+    ctypedef enum cudaError:
+        cudaSuccess                           =      0,
+        cudaErrorMissingConfiguration         =      1,
+        cudaErrorMemoryAllocation             =      2,
+        cudaErrorInitializationError          =      3,
+        cudaErrorLaunchFailure                =      4,
+        cudaErrorPriorLaunchFailure           =      5,
+        cudaErrorLaunchTimeout                =      6,
+        # TODO: add more CUDA errors
+
+    ctypedef cudaError cudaError_t
+
+cdef extern from "cuda_runtime_api.h" nogil:
+
+    cdef cudaError_t cudaHostRegister(void *ptr, size_t size, unsigned int flags)
+
 cdef extern from "cudf.h" nogil:
 
     ctypedef size_t gdf_size_type

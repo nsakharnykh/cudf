@@ -19,6 +19,8 @@ from cudf._gdf import nvtx_range_push, nvtx_range_pop
 import cudf.bindings.sort as cpp_sort
 import cudf.bindings.reduce as cpp_reduce
 
+from cudf.bindings.cudf_cpp import cuda_host_register
+
 # Operator mappings
 
 #   Unordered comparators
@@ -147,6 +149,7 @@ class NumericalColumn(columnops.TypedColumnBase):
         if self.has_null_mask:
             mask = pa.py_buffer(self.nullmask.mem.copy_to_host())
         data = pa.py_buffer(self.data.mem.copy_to_host())
+        cuda_host_register(memoryview(data), data.size)
         pa_dtype = _gdf.np_to_pa_dtype(self.dtype)
         out = pa.Array.from_buffers(
             type=pa_dtype,
