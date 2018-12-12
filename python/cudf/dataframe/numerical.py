@@ -20,6 +20,7 @@ import cudf.bindings.sort as cpp_sort
 import cudf.bindings.reduce as cpp_reduce
 
 from cudf.bindings.cudf_cpp import cuda_host_register
+from numba import cuda
 
 # Operator mappings
 
@@ -147,9 +148,13 @@ class NumericalColumn(columnops.TypedColumnBase):
     def to_arrow(self):
         mask = None
         if self.has_null_mask:
-            mask = pa.py_buffer(self.nullmask.mem.copy_to_host())
-        data = pa.py_buffer(self.data.mem.copy_to_host())
-        cuda_host_register(memoryview(data), data.size)
+            mask_arr = cuda.mapped_array(shape=self.nullmask.mem.shape, dtype=self.nullmask.mem.dtype)
+            self.nullmask.mem.copy_to_host(mask_arr)
+            mask = pa.py_buffer(host_mask)
+        data_arr = cuda.mapped_array(shape=self.data.mem.shape, dtype=self.data.mem.dtype)
+        self.data.mem.copy_to_host(data_arr)
+        data = pa.py_buffer(data_arr)
+        cuda_host_register(data.address, data.size)
         pa_dtype = _gdf.np_to_pa_dtype(self.dtype)
         out = pa.Array.from_buffers(
             type=pa_dtype,
